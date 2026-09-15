@@ -52,11 +52,11 @@ The Gold layer uses two fact tables because the business needs reporting at two 
 | `dim_products` | One row per product | Product name, category, current price, and reusable product attributes |
 | `scd_customers` | One row per customer version | Historical customer attributes for point-in-time analysis |
 
-### Gold-layer schema
+### Schema
 
-The Gold layer includes two analytics fact tables, a product dimension, and a Type 2 Slowly Changing Dimension for customer history.
+The Schema includes two analytics fact tables, a product dimension, and a Type 2 Slowly Changing Dimension for customer history.
 
-(![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/star_schema.png))
+![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/star_schema.png)
 
 ---
 
