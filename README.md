@@ -56,7 +56,7 @@ The Gold layer uses two fact tables because the business needs reporting at two 
 
 The Gold layer includes two analytics fact tables, a product dimension, and a Type 2 Slowly Changing Dimension for customer history.
 
-![ShopFlow Gold Layer Star Schema](![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/star_schema.png))
+(![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/star_schema.png))
 
 ---
 
