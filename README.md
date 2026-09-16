@@ -218,9 +218,120 @@ dbt snapshot
 dbt run
 dbt test
 ```
-
 ---
 
+## CI/CD and Deployment Automation
+
+The project uses GitHub for version control, GitHub Actions for automated deployment, and Databricks Declarative Automation Bundles to manage the dbt Job as code.
+
+### Deployment workflow
+
+```text
+Local development in VS Code
+        │
+        ▼
+Commit and push changes to GitHub
+        │
+        ▼
+Push to `dev` branch
+        │
+        ▼
+GitHub Actions validates and deploys the Databricks Bundle to the dev target
+        │
+        ▼
+Databricks updates the workspace-hosted dbt project and Lakeflow Job
+        │
+        ▼
+Databricks Job runs dbt dependencies, seeds, snapshots, models, and tests
+        │
+        ▼
+Validated Gold-layer tables are available for SQL, Genie, and dashboards
+```
+
+### CI/CD configuration files
+
+| File | Purpose |
+|---|---|
+| `databricks.yml` | Defines the `shopflow-dbt` bundle, shared variables, and the `dev` and `prod` deployment targets |
+| `resources/dbt_shopflow_job.yml` | Defines the Databricks Job, dbt task, SQL Warehouse, catalog, serverless environment, and dbt command sequence |
+| `.github/workflows/deploy_bundle_dev.yml` | Triggers on pushes to the `dev` branch; validates and deploys the bundle to the Databricks development target |
+| `.github/workflows/deploy_bundle_prod.yml` | Triggers on pushes to the `main` branch; validates and deploys the bundle to the production target |
+| GitHub Environment Secrets | Securely supplies `DATABRICKS_HOST` and `DATABRICKS_TOKEN` to GitHub Actions without committing credentials |
+
+### Automated deployment steps
+
+1. A developer updates dbt models, seeds, tests, snapshots, or bundle configuration in VS Code.
+2. The developer commits and pushes the change to the `dev` branch.
+3. GitHub Actions checks out the repository and installs the Databricks CLI.
+4. The workflow runs `databricks bundle validate -t dev` to validate YAML structure, target variables, and job configuration.
+5. If validation passes, the workflow runs `databricks bundle deploy -t dev`.
+6. Databricks uploads the latest project files to the workspace and creates or updates the bundle-managed `shopflow_dbt_job`.
+7. The deployed Databricks Job runs the dbt workflow:
+
+   ```text
+   dbt deps → dbt seed → dbt snapshot → dbt run → dbt test
+   ```
+
+The development workflow was tested by updating source seed data, committing the change to the `dev` branch, and successfully deploying the updated bundle through GitHub Actions.
+
+### Deployment evidence
+
+![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/GitHubActions.png)
+
+The successful workflow confirms that GitHub Actions checked out the `dev` branch, installed the Databricks CLI, validated the `dev` bundle target, and deployed the latest job configuration and project files to Databricks.
+
+![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/JobsDatabricks.png)
+
+The deployed Databricks Job completed successfully, confirming that the dbt workflow could execute in Databricks using the configured SQL Warehouse.
+---
+---
+
+## Business Analysis with Databricks Genie
+
+After the dbt pipeline produced tested Gold-layer models, Databricks AI/BI Genie was used to explore the curated data through natural-language questions and visualizations.
+
+The analysis demonstrates that the pipeline supports self-service business reporting across customer, product, category, and geographic dimensions.
+
+### Revenue by country
+
+**Business question:** Which countries generate the most revenue?
+
+![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/HighRevCountry.png)
+
+The United States generated **$1,892.48**, representing approximately **66% of total revenue** in the sample dataset. The UK ranked second with **$555.50**, followed by Canada at **$278.00** and Germany at **$134.99**.
+
+### Revenue by product category
+
+**Business question:** Which product categories drive the most revenue?
+
+![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/HighRevCategory.png)
+
+Electronics generated **$2,274.31**, or approximately **77% of total category revenue**, making it the primary revenue driver. Office generated **$381.22**, while Home generated **$285.48**.
+
+### Top products by revenue
+
+**Business question:** Which products have the highest revenue?
+
+![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/highRevProd.png)
+
+Wireless Headphones were the highest-revenue product at **$549.89**, followed by Monitor Stand at **$513.04** and Bluetooth Speaker at **$491.00**. The results show that the product-level Gold model supports ranking and category performance analysis.
+
+### Top customers by revenue
+
+**Business question:** Who are the highest-revenue customers?
+
+![image](https://github.com/SatyamSingh1299/ecommerce-lakehouse-dbt-databricks/blob/main/docs/TopCust.png)
+
+Customer `cust_001` generated the highest revenue at **$671.99**, followed by `cust_005` at **$490.75**. This analysis uses the customer and order-level analytics models to identify high-value customers and support customer-focused reporting.
+
+### Analysis takeaway
+
+The Gold layer enables consistent answers to operational and business questions without querying raw source files. By combining tested dbt facts, dimensions, and customer history with Databricks Genie, the project supports:
+
+- Revenue analysis by country, category, product, and customer
+- Product and category performance monitoring
+- Customer value analysis
+- Self-service exploration of curated analytics models
 ## Project Structure
 
 ```text
